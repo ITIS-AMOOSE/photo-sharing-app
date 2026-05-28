@@ -1,0 +1,17 @@
+.user-detail-card {
+  max-width: 700px;
+}
+
+.user-detail-row {
+  margin: 12px 0;
+}
+
+.user-detail-button {
+  margin-top: 16px;
+}
+
+.user-detail-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

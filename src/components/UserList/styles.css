@@ -1,0 +1,10 @@
+.user-list-title {
+  margin-bottom: 12px;
+  font-weight: bold;
+}
+
+.user-list-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
