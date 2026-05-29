@@ -42,3 +42,9 @@
 .comment-divider {
   margin-top: 10px;
 }
+
+.add-comment-box {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}

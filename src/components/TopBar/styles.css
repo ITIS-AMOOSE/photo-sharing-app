@@ -11,3 +11,17 @@
 .topbar-name {
   font-weight: bold;
 }
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.topbar-context {
+  opacity: 0.9;
+}
+
+.topbar-file-input {
+  display: none;
+}

@@ -1,0 +1,16 @@
+.login-card {
+  max-width: 700px;
+  margin: 20px auto;
+}
+
+.login-section {
+  margin-top: 20px;
+}
+
+.login-message {
+  margin-bottom: 16px;
+}
+
+.login-divider {
+  margin: 24px 0;
+}

@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
+  Button,
   Card,
   CardContent,
   CircularProgress,
   Divider,
+  TextField,
   Typography,
 } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import fetchModel from "../../lib/fetchModelData";
 import "./styles.css";
@@ -25,36 +27,85 @@ const formatDate = (dateValue) => {
 const UserPhotos = ({ setTopBarContext }) => {
   const { userId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [user, setUser] = useState(null);
   const [photos, setPhotos] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [commentInputs, setCommentInputs] = useState({});
+
+  const loadPhotos = useCallback(async () => {
+    try {
+      setLoading(true);
+      setErrorMessage("");
+
+      const userData = await fetchModel(`/user/${userId}`);
+      const photoData = await fetchModel(`/photosOfUser/${userId}`);
+
+      setUser(userData);
+      setPhotos(photoData);
+      setTopBarContext(
+        `Photos of ${userData.first_name} ${userData.last_name}`
+      );
+    } catch (error) {
+      setErrorMessage(error.message);
+      setTopBarContext("Error");
+    } finally {
+      setLoading(false);
+    }
+  }, [userId, setTopBarContext]);
 
   useEffect(() => {
-    const loadPhotos = async () => {
-      try {
-        setLoading(true);
-        setErrorMessage("");
-
-        const userData = await fetchModel(`/user/${userId}`);
-        const photoData = await fetchModel(`/photosOfUser/${userId}`);
-
-        setUser(userData);
-        setPhotos(photoData);
-        setTopBarContext(
-          `Photos of ${userData.first_name} ${userData.last_name}`
-        );
-      } catch (error) {
-        setErrorMessage(error.message);
-        setTopBarContext("Error");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadPhotos();
-  }, [userId, setTopBarContext]);
+  }, [loadPhotos, location.search]);
+
+  const handleCommentChange = (photoId, value) => {
+    setCommentInputs({
+      ...commentInputs,
+      [photoId]: value,
+    });
+  };
+
+  const handleAddComment = async (photoId) => {
+    try {
+      setErrorMessage("");
+
+      const commentText = commentInputs[photoId] || "";
+
+      if (!commentText.trim()) {
+        setErrorMessage("Comment cannot be empty");
+        return;
+      }
+
+      const token = localStorage.getItem("photo_app_token");
+
+      const response = await fetch(`${SERVER_URL}/commentsOfPhoto/${photoId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          comment: commentText,
+        }),
+      });
+
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || "Add comment failed");
+      }
+
+      setCommentInputs({
+        ...commentInputs,
+        [photoId]: "",
+      });
+
+      await loadPhotos();
+    } catch (error) {
+      setErrorMessage(error.message);
+    }
+  };
 
   if (loading) {
     return (
@@ -131,6 +182,25 @@ const UserPhotos = ({ setTopBarContext }) => {
                 <Divider className="comment-divider" />
               </div>
             ))}
+
+            <div className="add-comment-box">
+              <TextField
+                label="Add a comment"
+                value={commentInputs[photo._id] || ""}
+                onChange={(event) =>
+                  handleCommentChange(photo._id, event.target.value)
+                }
+                fullWidth
+                size="small"
+              />
+
+              <Button
+                variant="contained"
+                onClick={() => handleAddComment(photo._id)}
+              >
+                Add Comment
+              </Button>
+            </div>
           </CardContent>
         </Card>
       ))}
